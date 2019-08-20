@@ -1,9 +1,27 @@
 import express from "express";
+import multer from "multer";
+import multerConfig from "./config/multer";
+
+import UserController from "./app/controllers/UserController";
+import SessionController from "./app/controllers/SessionController";
+import FileController from "./app/controllers/FileController";
+import MeetupController from "./app/controllers/MeetupController";
+
+import AuthMiddleware from "./app/middlewares/auth";
 
 const routes = express.Router();
+const upload = multer(multerConfig);
 
-routes.get("/", (req, res) => {
-  res.status(200).json({ done: true });
-});
+routes.post("/users", UserController.store);
+routes.put("/users/:id", UserController.update);
+
+routes.post("/sessions", SessionController.store);
+
+routes.use(AuthMiddleware);
+
+routes.post("/files", upload.single("banner"), FileController.store);
+routes.post("/meetups", MeetupController.store);
+routes.get("/meetups", MeetupController.index);
+routes.put("/meetups/:id", MeetupController.update);
 
 export default routes;

@@ -9,7 +9,9 @@ class App {
     this.routes();
   }
 
-  middlewares() {}
+  middlewares() {
+    this.express.use(express.json());
+  }
   routes() {
     this.express.use(routes);
   }

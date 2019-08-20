@@ -3,3 +3,7 @@ node_modules/
 
 # ENVIRONMENT VARIABLES
 .env
+
+# TMP PATH
+tmp/*
+!tmp/.gitkeep

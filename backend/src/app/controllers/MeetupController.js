@@ -35,7 +35,7 @@ class MeetupController {
     if (dateFns.isAfter(new Date(), meetup.date)) {
       return res.status(401).json({
         status: "error",
-        message: "You cannot edit meetings that have already been held"
+        message: "You cannot edit meetings that have already been held."
       });
     }
 

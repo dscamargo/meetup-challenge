@@ -1,5 +1,5 @@
 import dateFns from "date-fns";
-import { Meetup } from "../models";
+import { Meetup, User, File } from "../models";
 
 class MeetupController {
   async store(req, res) {
@@ -16,7 +16,21 @@ class MeetupController {
     return res.status(201).json(meetup);
   }
   async index(req, res) {
-    const meetups = await Meetup.findAll({ where: { user_id: req.userId } });
+    const meetups = await Meetup.findAll({
+      where: { user_id: req.userId },
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "username", "email"]
+        },
+        {
+          model: File,
+          as: "file",
+          attributes: ["id", "title", "path"]
+        }
+      ]
+    });
 
     return res.status(200).json(meetups);
   }
@@ -35,13 +49,35 @@ class MeetupController {
     if (dateFns.isAfter(new Date(), meetup.date)) {
       return res.status(401).json({
         status: "error",
-        message: "You cannot edit meetings that have already been held."
+        message: "You cannot edit meetings that have already been held"
       });
     }
 
     meetup.update(req.body);
 
     return res.json(meetup);
+  }
+  async delete(req, res) {
+    const { id } = req.params;
+    const meetup = await Meetup.findByPk(id);
+
+    if (dateFns.isAfter(new Date(), meetup.date)) {
+      return res.status(401).json({
+        status: "error",
+        message: "You cannot remove meetings that have already been held."
+      });
+    }
+
+    if (meetup.user_id !== req.userId) {
+      return res.status(401).json({
+        status: "error",
+        message: "You are not the owner of this meetup"
+      });
+    }
+
+    await meetup.destroy({ force: true });
+
+    return res.status(200).send();
   }
 }
 

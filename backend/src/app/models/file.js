@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
     {}
   );
   File.associate = function(models) {
-    File.belongsTo(models.Meetup, { foreignKey: "file_id" });
+    File.hasOne(models.Meetup, { foreignKey: "file_id" });
   };
   return File;
 };

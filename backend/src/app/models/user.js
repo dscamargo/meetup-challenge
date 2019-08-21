@@ -22,7 +22,8 @@ module.exports = (sequelize, DataTypes) => {
   );
   User.associate = function(models) {
     // associations can be defined here
-    User.hasMany(models.Meetup, { foreignKey: "user_id" });
+    User.hasMany(models.Meetup, { foreignKey: "user_id", as: "meetup" });
+    User.hasMany(models.Register, { foreignKey: "user_id", as: "register" });
   };
 
   User.prototype.toJSON = function() {

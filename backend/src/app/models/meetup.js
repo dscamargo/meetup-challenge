@@ -13,8 +13,9 @@ module.exports = (sequelize, DataTypes) => {
     {}
   );
   Meetup.associate = function(models) {
-    Meetup.hasOne(models.File, { foreignKey: "file_id" });
-    Meetup.belongsTo(models.User, { foreignKey: "user_id" });
+    Meetup.belongsTo(models.File, { foreignKey: "file_id", as: "file" });
+    Meetup.belongsTo(models.User, { foreignKey: "user_id", as: "user" });
+    Meetup.hasMany(models.Register, { foreignKey: "meetup_id" });
   };
   return Meetup;
 };

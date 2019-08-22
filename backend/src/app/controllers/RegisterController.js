@@ -1,7 +1,12 @@
-import { isAfter, isEqual } from "date-fns";
+import moment from "moment";
+import { Op } from "sequelize";
 
-import Mail from "../../lib/Mail";
+import Queue from "../../lib/Queue";
+import RegisterMail from "../jobs/RegisterMail";
+
 import { User, Meetup, Register } from "../models";
+
+moment.locale("pt-br");
 
 class RegisterController {
   async store(req, res) {
@@ -29,7 +34,7 @@ class RegisterController {
       });
     }
 
-    if (isAfter(new Date(), meetup.date)) {
+    if (moment(new Date()).isAfter(meetup.date)) {
       return res.status(401).json({
         status: "error",
         message: "This meetup has passed"
@@ -57,7 +62,9 @@ class RegisterController {
       ]
     });
 
-    const sameDate = userMeetups.find(m => isEqual(m.meetup.date, meetup.date));
+    const sameDate = userMeetups.find(m =>
+      moment(m.meetup.date).isSame(meetup.date)
+    );
 
     if (sameDate) {
       return res.status(401).json({
@@ -77,22 +84,57 @@ class RegisterController {
           model: User,
           as: "user",
           attributes: ["username", "email"]
+        },
+        {
+          model: Meetup,
+          as: "meetup",
+          attributes: ["title", "description", "place", "date"]
         }
       ]
     });
 
-    await Mail.sendMail({
-      to: `${meetup.user.username} <${meetup.user.email}>`,
-      subject: "Nova inscrição no seu Meetup",
-      template: "cancelation",
-      context: {
-        user: meetup.user.username,
-        name: registerData.user.username,
-        email: registerData.user.email
-      }
+    await Queue.add(RegisterMail.key, {
+      to: meetup.user.email,
+      user: meetup.user.username,
+      title: registerData.meetup.title,
+      description: registerData.meetup.description,
+      place: registerData.meetup.place,
+      date: moment(registerData.meetup.date).format("LLLL"),
+      name: registerData.user.username,
+      email: registerData.user.email
     });
 
     return res.status(201).json(register);
+  }
+  async index(req, res) {
+    const registers = await Register.findAll({
+      where: {
+        user_id: req.userId
+      },
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["username", "email"]
+        },
+        {
+          model: Meetup,
+          as: "meetup",
+          include: [
+            { model: User, as: "user", attributes: ["username", "email"] }
+          ],
+          attributes: ["id", "description", "title", "place", "date"],
+          where: {
+            date: {
+              [Op.gte]: new Date()
+            }
+          }
+        }
+      ],
+      order: [[{ model: Meetup, as: "meetup" }, "date", "ASC"]]
+    });
+
+    return res.status(200).json({ registers });
   }
 }
 

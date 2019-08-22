@@ -1,6 +1,6 @@
-import dateFns, { startOfDay, endOfDay } from "date-fns";
-import { Op } from "sequelize";
-import { Meetup, User, File } from "../models";
+import dateFns, { startOfDay, endOfDay } from 'date-fns';
+import { Op } from 'sequelize';
+import { Meetup, User, File } from '../models';
 
 class MeetupController {
   async store(req, res) {
@@ -8,8 +8,8 @@ class MeetupController {
 
     if (dateFns.isAfter(new Date(), date))
       return res.status(401).json({
-        status: "error",
-        message: "It is not possible to make an appointment earlier than today"
+        status: 'error',
+        message: 'It is not possible to make an appointment earlier than today',
       });
 
     const meetup = await Meetup.create({ ...req.body, user_id: req.userId });
@@ -24,39 +24,41 @@ class MeetupController {
       meetups = await Meetup.findAll({
         where: {
           date: {
-            [Op.between]: [startOfDay(date), endOfDay(date)]
-          }
+            [Op.between]: [startOfDay(date), endOfDay(date)],
+          },
         },
         limit: 10,
         offset: 10 * page - 10,
         include: [
           {
             model: User,
-            as: "user",
-            attributes: ["id", "username", "email"]
+            as: 'user',
+            attributes: ['id', 'username', 'email'],
           },
           {
             model: File,
-            as: "file",
-            attributes: ["id", "title", "path"]
-          }
-        ]
+            as: 'file',
+            attributes: ['id', 'title', 'path'],
+          },
+        ],
       });
     } else {
       meetups = await Meetup.findAll({
         where: { user_id: req.userId },
+        limit: 10,
+        offset: 10 * page - 10,
         include: [
           {
             model: User,
-            as: "user",
-            attributes: ["id", "username", "email"]
+            as: 'user',
+            attributes: ['id', 'username', 'email'],
           },
           {
             model: File,
-            as: "file",
-            attributes: ["id", "title", "path"]
-          }
-        ]
+            as: 'file',
+            attributes: ['id', 'title', 'path'],
+          },
+        ],
       });
     }
 
@@ -69,15 +71,15 @@ class MeetupController {
 
     if (meetup.user_id !== req.userId) {
       return res.status(401).json({
-        status: "error",
-        message: "You are not the owner of this meetup"
+        status: 'error',
+        message: 'You are not the owner of this meetup',
       });
     }
 
     if (dateFns.isAfter(new Date(), meetup.date)) {
       return res.status(401).json({
-        status: "error",
-        message: "You cannot edit meetings that have already been held"
+        status: 'error',
+        message: 'You cannot edit meetings that have already been held',
       });
     }
 
@@ -91,15 +93,15 @@ class MeetupController {
 
     if (dateFns.isAfter(new Date(), meetup.date)) {
       return res.status(401).json({
-        status: "error",
-        message: "You cannot remove meetings that have already been held."
+        status: 'error',
+        message: 'You cannot remove meetings that have already been held.',
       });
     }
 
     if (meetup.user_id !== req.userId) {
       return res.status(401).json({
-        status: "error",
-        message: "You are not the owner of this meetup"
+        status: 'error',
+        message: 'You are not the owner of this meetup',
       });
     }
 

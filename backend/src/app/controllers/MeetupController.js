@@ -16,6 +16,33 @@ class MeetupController {
 
     return res.status(201).json(meetup);
   }
+  async show(req, res) {
+    const { id } = req.params;
+
+    const meetup = await Meetup.findByPk(id, {
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['username', 'email'],
+        },
+        {
+          model: File,
+          as: 'file',
+          attributes: ['title', 'path'],
+        },
+      ],
+    });
+
+    if (!meetup) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Meetup do not found',
+      });
+    }
+
+    return res.status(200).json(meetup);
+  }
   async index(req, res) {
     const { date, page = 1 } = req.query;
     let meetups;
@@ -23,6 +50,7 @@ class MeetupController {
     if (date) {
       meetups = await Meetup.findAll({
         where: {
+          user_id: req.userId,
           date: {
             [Op.between]: [startOfDay(date), endOfDay(date)],
           },

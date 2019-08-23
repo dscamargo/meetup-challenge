@@ -1,5 +1,7 @@
-import express from "express";
-import routes from "./routes";
+import express from 'express';
+import cors from 'cors';
+
+import routes from './routes';
 
 class App {
   constructor() {
@@ -10,6 +12,8 @@ class App {
   }
 
   middlewares() {
+    this.express.use(express.static('public'));
+    this.express.use(cors());
     this.express.use(express.json());
   }
   routes() {

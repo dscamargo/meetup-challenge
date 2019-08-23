@@ -60,10 +60,6 @@ export const Meetup = styled.div`
   padding: 0 30px;
   margin-bottom: 10px;
 
-  &:last-child {
-    margin-bottom: 0;
-  }
-
   strong {
     color: #fff;
     font-size: 16px;

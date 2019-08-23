@@ -12,6 +12,41 @@ export const InnerContainer = styled.div`
   display: flex;
   flex-direction: column;
 
+  label{
+    width: 100%;
+    height: 300px;
+    cursor: pointer;
+    margin-top: 20px;
+
+    &:hover{
+      opacity:0.7
+    }
+
+    div{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.15);
+      flex-direction: column;
+        color: #979797;
+
+      p{
+        margin-top: 20px;
+        font-size: 25px;
+      }
+    }
+
+    img{
+      width: 100%;
+      height: 300px;
+      border: 3px solid rgba(0,0,0,0.2)
+    }
+  }
+
+
+
   input {
     background: rgba(0, 0, 0, 0.15);
     width: 100%;
@@ -19,6 +54,7 @@ export const InnerContainer = styled.div`
     margin-top: 20px;
     padding: 20px;
     color: #fff;
+    font-size: 14px;
 
     &::placeholder {
       color: #979797;
@@ -35,27 +71,7 @@ export const InnerContainer = styled.div`
     background: rgba(0, 0, 0, 0.15);
     display: none;
   }
-  label {
-    width: 100%;
-    height: 200px;
-    margin-top: 20px;
-    cursor: pointer;
 
-    div {
-      background: rgba(0, 0, 0, 0.15);
-      width: 100%;
-      height: 200px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      color: #979797;
-
-      p {
-        margin-top: 20px;
-      }
-    }
-  }
 
   input[name="title"] {
     height: 50px;
@@ -83,6 +99,7 @@ export const SaveButton = styled.button`
   display: flex;
   justify-content: center;
   align-items: center;
+  font-size: 14px;
 
   strong {
     margin-left: 10px;

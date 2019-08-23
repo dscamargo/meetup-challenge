@@ -27,6 +27,7 @@ export const Container = styled.div`
         height: 42px;
         background: #d44059;
         color: #fff;
+        font-size: 14px;
         font-weight: bold;
         border: 0;
         border-radius: 4px;

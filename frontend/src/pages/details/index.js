@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { MdModeEdit, MdDeleteForever, MdPlace, MdEvent } from "react-icons/md";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, isAfter } from "date-fns";
 import pt from "date-fns/locale/pt";
 import { toast } from "react-toastify";
 
@@ -13,7 +13,7 @@ import {
   InformationsContainer,
   Description,
   LocalContainer,
-  Date,
+  DateContainer,
   Place
 } from "./styles";
 import Header from "../../components/header";
@@ -53,16 +53,18 @@ export default function Details({ match }) {
         <InnerContainer>
           <Title>
             <strong>{details.title}</strong>
-            <div>
-              <EditLink to={`/meetup/${id}/edit`}>
-                <MdModeEdit size={"1.5em"} />
-                <span>Editar</span>
-              </EditLink>
-              <button onClick={handleCancel} name="cancel" type="button">
-                <MdDeleteForever size={"1.5em"} />
-                <span>Cancelar</span>
-              </button>
-            </div>
+            {isAfter(parseISO(details.date), new Date()) && (
+              <div>
+                <EditLink to={`/meetup/${id}/edit`}>
+                  <MdModeEdit size={"1.5em"} />
+                  <span>Editar</span>
+                </EditLink>
+                <button onClick={handleCancel} name="cancel" type="button">
+                  <MdDeleteForever size={"1.5em"} />
+                  <span>Cancelar</span>
+                </button>
+              </div>
+            )}
           </Title>
 
           <InformationsContainer>
@@ -76,18 +78,18 @@ export default function Details({ match }) {
             </Description>
 
             <LocalContainer>
-              <Date>
+              <DateContainer>
                 <MdEvent size={"1.0em"} />
                 <span>
                   {format(
                     parseISO(details.date),
-                    "dd 'de' LLLL 'de' yyyy 'às' HH':'mm",
+                    "dd 'de' LLLL 'de' yyyy 'às' HH':'mm'h'",
                     {
                       locale: pt
                     }
                   )}
                 </span>
-              </Date>
+              </DateContainer>
               <Place>
                 <MdPlace size={"1.0em"} />
                 <span>{details.place}</span>

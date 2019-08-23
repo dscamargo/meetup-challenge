@@ -21,7 +21,6 @@ export const EditLink = styled(Link)`
   width: 115px;
   height: 40px;
   color: #fff;
-  margin-right: 10px;
   font-weight: bold;
   font-size: 14px;
 
@@ -41,14 +40,14 @@ export const Title = styled.div`
   strong {
     color: #fff;
     font-size: 32px;
-    width: 70%;
+    width: 75%;
   }
 
   div {
-    width: 30%;
+    width: 25%;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
 
     button {
       display: flex;
@@ -100,7 +99,7 @@ export const LocalContainer = styled.div`
   flex-direction: row;
 `;
 
-export const Date = styled.div`
+export const DateContainer = styled.div`
   width: 35%;
   display: flex;
   align-items: center;

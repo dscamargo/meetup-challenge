@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { Form, Input } from "unform";
 import DatePicker, { registerLocale } from "react-datepicker";
 import { MdAddCircleOutline, MdAddAPhoto } from "react-icons/md";
+import { parseISO } from "date-fns";
 import ptBR from "date-fns/locale/pt-BR";
 import { toast } from "react-toastify";
 
@@ -14,6 +15,7 @@ import {
 } from "./styles";
 import Header from "../../components/header";
 import api from "../../services/api";
+import BannerDefault from "../../assets/images/default.png";
 import history from "../../services/history";
 
 registerLocale("pt-BR", ptBR);
@@ -24,13 +26,18 @@ export default function New({ match }) {
   const [file, setFile] = useState(null);
   const [date, setDate] = useState("");
   const [informations, setInformations] = useState(null);
+  const [preview, setPreview] = useState(null);
 
   useEffect(() => {
+    setPreview(BannerDefault);
     async function getMeetupInformations() {
       if (id) {
         const response = await api.get(`/meetups/${id}`);
 
         setInformations(response.data);
+
+        setDate(parseISO(response.data.date));
+        setPreview(`http://localhost:3333/uploads/${response.data.file.path}`);
       }
     }
 
@@ -46,6 +53,9 @@ export default function New({ match }) {
       const response = await api.post("/files", data);
 
       setFile(response.data.id);
+      setPreview(`http://localhost:3333/uploads/${response.data.path}`);
+
+      console.log(preview);
     } catch (error) {
       toast.error("Internal Server Error", {
         position: toast.POSITION.TOP_RIGHT
@@ -91,18 +101,16 @@ export default function New({ match }) {
     <Container>
       <Header username={profile.username} />
       <InnerContainer>
-        <input
-          name="banner"
-          id="banner"
-          type="file"
-          accept="image/*"
-          onChange={handleChange}
-        />
         <label htmlFor="banner">
-          <div>
-            <MdAddAPhoto size={"3em"} />
-            <p>Selecionar imagem</p>
-          </div>
+          <img src={preview} alt="Banner Preview" />
+          <input
+            type="file"
+            name="banner"
+            id="banner"
+            data-file={file}
+            accept="image/*"
+            onChange={handleChange}
+          />
         </label>
 
         <Form onSubmit={handleSubmit} initialData={informations}>
@@ -115,7 +123,9 @@ export default function New({ match }) {
           <div style={{ display: "flex", flexDirection: "row" }}>
             <DatePicker
               minDate={new Date()}
-              openToDate={new Date()}
+              openToDate={
+                informations ? parseISO(informations.date) : new Date()
+              }
               todayButton={"Hoje"}
               selected={date}
               onChange={date => setDate(date)}

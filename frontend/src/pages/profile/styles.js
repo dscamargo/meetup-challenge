@@ -64,6 +64,7 @@ export const ButtonContainer = styled.div`
     height: 40px;
     color: #fff;
     font-weight: bold;
+    font-size: 14px;
 
     span {
       margin-left: 10px;

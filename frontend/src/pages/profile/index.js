@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { MdAddCircleOutline } from "react-icons/md";
-import { toast } from "react-toastify";
 import * as Yup from "yup";
+import { toast } from "react-toastify";
 
-import api from "../../services/api";
-import history from "../../services/history";
+import { updateProfileRequest } from "../../store/modules/user/actions";
 
 import {
   Container,
@@ -38,6 +37,7 @@ const schema = Yup.object().shape({
 });
 
 export default function Profile() {
+  const dispatch = useDispatch();
   const profile = useSelector(state => state.user.profile);
 
   const [username, setUsername] = useState("");
@@ -52,38 +52,27 @@ export default function Profile() {
   }, [profile.email, profile.username]);
 
   async function handleSubmit() {
-    try {
-      if (
-        !(await schema.isValid({
-          password,
-          password_old,
-          password_confirmation
-        }))
-      ) {
-        toast.error("Verifique os campos e tente novamente. !", {
+    schema
+      .validate({
+        password_old,
+        password,
+        password_confirmation
+      })
+      .then(() => {
+        dispatch(
+          updateProfileRequest(
+            profile.id,
+            password_old,
+            password,
+            password_confirmation
+          )
+        );
+      })
+      .catch(err => {
+        toast.error(err.message, {
           position: toast.POSITION.TOP_RIGHT
         });
-
-        return;
-      }
-
-      await api.put(`/users/${profile.id}`, {
-        username,
-        email,
-        password,
-        password_confirmation,
-        password_old
       });
-
-      toast.info("Suas informações foram alteradas com sucesso !", {
-        position: toast.POSITION.TOP_RIGHT
-      });
-      history.push("/");
-    } catch (error) {
-      toast.error("Senha incorreta !", {
-        position: toast.POSITION.TOP_RIGHT
-      });
-    }
   }
 
   return (

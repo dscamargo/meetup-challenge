@@ -17,6 +17,7 @@ import {
   Place
 } from "./styles";
 import Header from "../../components/header";
+import Loading from "../../components/loading";
 import api from "../../services/api";
 import history from "../../services/history";
 
@@ -24,8 +25,10 @@ export default function Details({ match }) {
   const { id } = match.params;
   const profile = useSelector(state => state.user.profile);
   const [details, setDetails] = useState({});
+  const [loading, setLoading] = useState(false);
 
   async function handleCancel() {
+    setLoading(true);
     try {
       await api.delete(`/meetups/${id}`);
       history.push("/");
@@ -35,13 +38,20 @@ export default function Details({ match }) {
     } catch (error) {
       console.tron.log(error);
     }
+    setLoading(false);
   }
 
   useEffect(() => {
     async function getDetails() {
-      const response = await api.get(`/meetups/${id}`);
+      setLoading(true);
+      try {
+        const response = await api.get(`/meetups/${id}`);
 
-      setDetails(response.data);
+        setDetails(response.data);
+      } catch (error) {
+        console.tron.log(error);
+      }
+      setLoading(false);
     }
 
     getDetails();
@@ -49,6 +59,19 @@ export default function Details({ match }) {
   return (
     <Container>
       <Header username={profile.username} />
+      {loading && (
+        <div
+          style={{
+            width: "100vw",
+            height: "100vh",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
+          }}
+        >
+          <Loading></Loading>
+        </div>
+      )}
       {details.file && (
         <InnerContainer>
           <Title>
@@ -60,8 +83,14 @@ export default function Details({ match }) {
                   <span>Editar</span>
                 </EditLink>
                 <button onClick={handleCancel} name="cancel" type="button">
-                  <MdDeleteForever size={"1.5em"} />
-                  <span>Cancelar</span>
+                  {loading ? (
+                    <Loading color="#fff"></Loading>
+                  ) : (
+                    <div>
+                      <MdDeleteForever size={"2em"} />
+                      <span>Cancelar</span>
+                    </div>
+                  )}
                 </button>
               </div>
             )}

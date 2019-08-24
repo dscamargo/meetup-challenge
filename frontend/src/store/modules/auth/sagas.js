@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import api from "../../../services/api";
 import history from "../../../services/history";
 
-import { signinSuccess } from "./actions";
+import { signinSuccess, signFailure } from "./actions";
 
 export function* signIn({ payload }) {
   const { email, password } = payload;
@@ -28,6 +28,7 @@ export function* signIn({ payload }) {
     toast.error("Credenciais inválidas !", {
       position: toast.POSITION.TOP_RIGHT
     });
+    yield put(signFailure());
   }
 }
 

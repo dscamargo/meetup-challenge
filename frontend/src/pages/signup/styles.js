@@ -26,7 +26,7 @@ export const Container = styled.div`
       padding: 10px;
       border-radius: 4px;
       border: 0;
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.15);
       margin-bottom: 10px;
       font-size: 14px;
       color: #fff;
@@ -34,6 +34,14 @@ export const Container = styled.div`
       &::placeholder {
         color: #979797;
       }
+    }
+
+    span {
+      align-self: flex-start;
+      color: red;
+      margin: 10px 0;
+      font-weight: bold;
+      font-size: 14px;
     }
     button {
       width: 100%;

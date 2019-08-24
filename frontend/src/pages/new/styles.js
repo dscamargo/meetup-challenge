@@ -18,6 +18,7 @@ export const InnerContainer = styled.div`
     cursor: pointer;
     margin-top: 20px;
 
+
     &:hover{
       opacity:0.7
     }
@@ -30,7 +31,7 @@ export const InnerContainer = styled.div`
       height: 100%;
       background: rgba(0,0,0,0.15);
       flex-direction: column;
-        color: #979797;
+      color: #979797;
 
       p{
         margin-top: 20px;
@@ -41,7 +42,23 @@ export const InnerContainer = styled.div`
     img{
       width: 100%;
       height: 300px;
-      border: 3px solid rgba(0,0,0,0.2)
+
+    }
+  }
+
+  textarea{
+    width: 100%;
+    height: 200px;
+    background: rgba(0,0,0, 0.15);
+    border: 0;
+    margin-top: 20px;
+    padding: 20px;
+    font-size :14px;
+    color: #fff;
+    
+    &::placeholder{
+      color: #979797;
+
     }
   }
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { MdAddCircleOutline } from "react-icons/md";
 import { toast } from "react-toastify";
+import * as Yup from "yup";
 
 import api from "../../services/api";
 import history from "../../services/history";
@@ -14,8 +15,31 @@ import {
 } from "./styles";
 import Header from "../../components/header";
 
+const schema = Yup.object().shape({
+  password_old: Yup.string().min(6, "Senha atual inválida."),
+  password: Yup.string().when("password_old", (oldPassword, field) =>
+    oldPassword
+      ? field
+          .min(6, "Nova senha inválida.")
+          .required("A nova senha é obrigatória.")
+      : field
+  ),
+  password_confirmation: Yup.string().when("password", (password, field) =>
+    password
+      ? field
+          .min(6, "A confirmação deve ser igual a nova senha. ")
+          .required("A confirmação de senha é obrigatória.")
+          .oneOf(
+            [Yup.ref("password")],
+            "A confirmação deve ser igual a nova senha."
+          )
+      : field
+  )
+});
+
 export default function Profile() {
   const profile = useSelector(state => state.user.profile);
+
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password_old, setPassword_old] = useState("");
@@ -29,6 +53,20 @@ export default function Profile() {
 
   async function handleSubmit() {
     try {
+      if (
+        !(await schema.isValid({
+          password,
+          password_old,
+          password_confirmation
+        }))
+      ) {
+        toast.error("Verifique os campos e tente novamente. !", {
+          position: toast.POSITION.TOP_RIGHT
+        });
+
+        return;
+      }
+
       await api.put(`/users/${profile.id}`, {
         username,
         email,
@@ -42,7 +80,9 @@ export default function Profile() {
       });
       history.push("/");
     } catch (error) {
-      console.log(error);
+      toast.error("Senha incorreta !", {
+        position: toast.POSITION.TOP_RIGHT
+      });
     }
   }
 
@@ -58,7 +98,7 @@ export default function Profile() {
               placeholder="Seu nome"
               onChange={e => setUsername(e.target.value)}
               value={username}
-              required
+              readOnly
             />
             <input
               name="email"
@@ -66,7 +106,7 @@ export default function Profile() {
               placeholder="Seu email"
               onChange={e => setEmail(e.target.value)}
               value={email}
-              required
+              readOnly
             />
           </div>
 
@@ -103,8 +143,10 @@ export default function Profile() {
         <ButtonContainer>
           <div />
           <button onClick={handleSubmit} type="button">
-            <MdAddCircleOutline size={"1.5em"} />
-            <span>Salvar perfil</span>
+            <div>
+              <MdAddCircleOutline size={"1.5em"} />
+              <span>Salvar perfil</span>
+            </div>
           </button>
         </ButtonContainer>
       </InnerContainer>

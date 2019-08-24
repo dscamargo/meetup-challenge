@@ -61,13 +61,20 @@ export const ButtonContainer = styled.div`
     border: 0;
     border-radius: 4px;
     width: 160px;
-    height: 40px;
+    height: 45px;
     color: #fff;
     font-weight: bold;
     font-size: 14px;
 
-    span {
-      margin-left: 10px;
+    div {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      span {
+        margin-left: 10px;
+      }
     }
   }
 `;

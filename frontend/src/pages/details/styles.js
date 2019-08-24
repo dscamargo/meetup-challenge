@@ -25,7 +25,7 @@ export const EditLink = styled(Link)`
   font-size: 14px;
 
   span {
-    margin-left: 5px;
+    margin-left: 10px;
   }
 `;
 
@@ -59,9 +59,17 @@ export const Title = styled.div`
       height: 40px;
       color: #fff;
 
-      span {
-        font-weight: bold;
-        font-size: 14px;
+      div {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        span {
+          font-weight: bold;
+          font-size: 14px;
+          margin-left: 10px;
+        }
       }
     }
     button[name="cancel"] {

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { Form, Input } from "unform";
 import DatePicker, { registerLocale } from "react-datepicker";
-import { MdAddCircleOutline, MdAddAPhoto } from "react-icons/md";
+import { MdAddCircleOutline } from "react-icons/md";
 import { parseISO } from "date-fns";
 import ptBR from "date-fns/locale/pt-BR";
 import { toast } from "react-toastify";
+import * as Yup from "yup";
 
 import {
   Container,
@@ -21,10 +21,20 @@ import history from "../../services/history";
 registerLocale("pt-BR", ptBR);
 
 export default function New({ match }) {
+  const schema = Yup.object().shape({
+    title: Yup.string().required("O titulo é obrigatório."),
+    description: Yup.string().required("A descrição é obrigatória."),
+    place: Yup.string().required("A endereço é obrigatório."),
+    date: Yup.date().required("A data do evento é obrigatória.")
+  });
+
   const profile = useSelector(state => state.user.profile);
   const { id } = match.params;
-  const [file, setFile] = useState(null);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [place, setPlace] = useState("");
   const [date, setDate] = useState("");
+  const [file, setFile] = useState(null);
   const [informations, setInformations] = useState(null);
   const [preview, setPreview] = useState(null);
 
@@ -36,7 +46,11 @@ export default function New({ match }) {
 
         setInformations(response.data);
 
+        setTitle(response.data.title);
+        setDescription(response.data.description);
+        setPlace(response.data.place);
         setDate(parseISO(response.data.date));
+
         setPreview(`http://localhost:3333/uploads/${response.data.file.path}`);
       }
     }
@@ -54,8 +68,6 @@ export default function New({ match }) {
 
       setFile(response.data.id);
       setPreview(`http://localhost:3333/uploads/${response.data.path}`);
-
-      console.log(preview);
     } catch (error) {
       toast.error("Internal Server Error", {
         position: toast.POSITION.TOP_RIGHT
@@ -63,9 +75,16 @@ export default function New({ match }) {
     }
   }
 
-  async function handleSubmit(data) {
-    const { title, description, place } = data;
+  async function handleSubmit() {
     try {
+      if (!(await schema.isValid({ title, description, place, date }))) {
+        toast.error("Verifique os campos e tente novamente. !", {
+          position: toast.POSITION.TOP_RIGHT
+        });
+
+        return;
+      }
+
       if (id) {
         await api.put(`/meetups/${id}`, {
           title,
@@ -85,11 +104,11 @@ export default function New({ match }) {
           date,
           file_id: file
         });
-
         toast.info("Meetup criado com sucesso !", {
           position: toast.POSITION.TOP_RIGHT
         });
       }
+
       history.push("/");
     } catch (error) {
       toast.error("Internal Server Error", {
@@ -97,9 +116,11 @@ export default function New({ match }) {
       });
     }
   }
+
   return (
     <Container>
       <Header username={profile.username} />
+
       <InnerContainer>
         <label htmlFor="banner">
           <img src={preview} alt="Banner Preview" />
@@ -113,40 +134,51 @@ export default function New({ match }) {
           />
         </label>
 
-        <Form onSubmit={handleSubmit} initialData={informations}>
-          <Input name="title" type="text" placeholder="Titulo do meetup" />
-          <Input
-            name="description"
-            type="text"
-            placeholder="Descrição completa"
-          />
-          <div style={{ display: "flex", flexDirection: "row" }}>
-            <DatePicker
-              minDate={new Date()}
-              openToDate={
-                informations ? parseISO(informations.date) : new Date()
-              }
-              todayButton={"Hoje"}
-              selected={date}
-              onChange={date => setDate(date)}
-              locale="pt-BR"
-              showTimeSelect
-              timeFormat="p"
-              timeIntervals={15}
-              dateFormat="Pp"
-              placeholderText="Data"
-            />
-            <Input name="place" type="text" placeholder="Local" />
-          </div>
+        <input
+          name="title"
+          type="text"
+          placeholder="Titulo do meetup"
+          onChange={e => setTitle(e.target.value)}
+          value={title}
+        />
+        <textarea
+          name="description"
+          type="text"
+          placeholder="Descrição completa"
+          onChange={e => setDescription(e.target.value)}
+          value={description}
+        ></textarea>
 
-          <ButtonContainer>
-            <div />
-            <SaveButton type="submit">
-              <MdAddCircleOutline size={"1.5em"} />
-              <strong>Salvar meetup</strong>
-            </SaveButton>
-          </ButtonContainer>
-        </Form>
+        <div style={{ display: "flex", flexDirection: "row" }}>
+          <DatePicker
+            minDate={new Date()}
+            openToDate={informations ? parseISO(informations.date) : new Date()}
+            todayButton={"Hoje"}
+            selected={date}
+            onChange={date => setDate(date)}
+            locale="pt-BR"
+            showTimeSelect
+            timeFormat="p"
+            timeIntervals={15}
+            dateFormat="Pp"
+            placeholderText="Data"
+          />
+          <input
+            name="place"
+            type="text"
+            placeholder="Local"
+            onChange={e => setPlace(e.target.value)}
+            value={place}
+          />
+        </div>
+
+        <ButtonContainer>
+          <div />
+          <SaveButton type="button" onClick={handleSubmit}>
+            <MdAddCircleOutline size={"1.5em"} />
+            <strong>Salvar meetup</strong>
+          </SaveButton>
+        </ButtonContainer>
       </InnerContainer>
     </Container>
   );

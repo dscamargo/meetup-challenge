@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { MdAddCircleOutline, MdChevronRight } from "react-icons/md";
 import { format, parseISO } from "date-fns";
 import pt from "date-fns/locale/pt";
-
-import { useSelector } from "react-redux";
-
-import Header from "../../components/header";
 
 import {
   Container,
@@ -16,17 +13,24 @@ import {
   NewMeetup
 } from "./styles";
 import api from "../../services/api";
+import Header from "../../components/header";
+import Loading from "../../components/loading";
 
 export default function Dashboard() {
+  const [loading, setLoading] = useState(false);
   const [meetups, setMeetups] = useState([]);
   const profile = useSelector(state => state.user.profile);
   useEffect(() => {
     async function getMeetups() {
+      setLoading(true);
       try {
         const response = await api.get("/meetups");
 
         setMeetups(response.data);
-      } catch (error) {}
+      } catch (error) {
+        console.warn("Internal server error");
+      }
+      setLoading(false);
     }
 
     getMeetups();
@@ -45,29 +49,38 @@ export default function Dashboard() {
           </NewMeetup>
         </MyMeetups>
 
-        {meetups.map(meetup => (
-          <Meetup key={meetup.id}>
-            <strong>{meetup.title}</strong>
-            <div>
-              <span>
-                {format(
-                  parseISO(meetup.date),
-                  "dd 'de' LLLL 'de' yyyy 'às' HH':'mm",
-                  {
-                    locale: pt
-                  }
-                )}
-              </span>
-              <Link to={`/meetup/${meetup.id}/details`}>
-                <MdChevronRight
-                  style={{ marginLeft: 20 }}
-                  size={"2em"}
-                  color="#979797"
-                />
-              </Link>
-            </div>
-          </Meetup>
-        ))}
+        {!meetups.length && (
+          <h1 style={{ textAlign: "center", fontSize: 20, color: "#fff" }}>
+            Nenhum meetup encontrado
+          </h1>
+        )}
+
+        {loading && <Loading></Loading>}
+
+        {!!meetups.length &&
+          meetups.map(meetup => (
+            <Meetup key={meetup.id}>
+              <strong>{meetup.title}</strong>
+              <div>
+                <span>
+                  {format(
+                    parseISO(meetup.date),
+                    "dd 'de' LLLL 'de' yyyy 'às' HH':'mm",
+                    {
+                      locale: pt
+                    }
+                  )}
+                </span>
+                <Link to={`/meetup/${meetup.id}/details`}>
+                  <MdChevronRight
+                    style={{ marginLeft: 20 }}
+                    size={"2em"}
+                    color="#979797"
+                  />
+                </Link>
+              </div>
+            </Meetup>
+          ))}
       </InnerContainer>
     </Container>
   );

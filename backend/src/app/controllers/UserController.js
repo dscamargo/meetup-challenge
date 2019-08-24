@@ -1,7 +1,7 @@
-import * as Yup from "yup";
-import bcrypt from "bcryptjs";
+import * as Yup from 'yup';
+import bcrypt from 'bcryptjs';
 
-import { User } from "../models/";
+import { User } from '../models/';
 
 class UserController {
   async store(req, res) {
@@ -12,21 +12,21 @@ class UserController {
         .required(),
       password: Yup.string()
         .min(6)
-        .required()
+        .required(),
     });
     const { username, email, password } = req.body;
 
     if (!(await schema.isValid(req.body)))
       return res
         .status(400)
-        .json({ status: "error", message: "Validation fails" });
+        .json({ status: 'error', message: 'Validation fails' });
 
     const userExists = await User.findOne({ where: { email } });
 
     if (userExists)
       return res
         .status(401)
-        .json({ status: "error", message: "User already exists" });
+        .json({ status: 'error', message: 'User already exists' });
 
     const user = await User.create({ username, email, password });
 
@@ -38,14 +38,12 @@ class UserController {
       username: Yup.string(),
       email: Yup.string().email(),
       password_old: Yup.string().min(6),
-      password: Yup.string()
-        .min(6)
-        .when("password_old", (oldPassword, field) =>
-          oldPassword ? field.required() : field
-        ),
-      password_confirmation: Yup.string().when("password", (password, field) =>
-        password ? field.required().oneOf([Yup.ref("password")]) : field
-      )
+      password: Yup.string().when('password_old', (oldPassword, field) =>
+        oldPassword ? field.min(6).required() : field
+      ),
+      password_confirmation: Yup.string().when('password', (password, field) =>
+        password ? field.required().oneOf([Yup.ref('password')]) : field
+      ),
     });
     const { id } = req.params;
     const { password_old, password } = req.body;
@@ -53,24 +51,26 @@ class UserController {
     if (!(await schema.isValid(req.body))) {
       return res
         .status(400)
-        .json({ status: "error", message: "Validation fails" });
+        .json({ status: 'error', message: 'Validation fails' });
     }
 
     const user = await User.findByPk(id);
 
     if (!user)
-      res.status(404).json({ status: "error", message: "User not found" });
+      res.status(404).json({ status: 'error', message: 'User not found' });
 
-    const isCorrect = await bcrypt.compare(password_old, user.password_hash);
+    if (password_old) {
+      const isCorrect = await bcrypt.compare(password_old, user.password_hash);
 
-    if (!isCorrect)
-      return res
-        .status(401)
-        .json({ status: "error", message: "Incorrect old password" });
+      if (!isCorrect)
+        return res
+          .status(401)
+          .json({ status: 'error', message: 'Incorrect old password' });
 
-    user.password = password;
+      user.password = password;
 
-    user.save();
+      user.save();
+    }
 
     return res.status(200).json(user);
   }

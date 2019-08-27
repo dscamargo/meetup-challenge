@@ -50,7 +50,7 @@ class MeetupController {
     if (date) {
       meetups = await Meetup.findAll({
         where: {
-          user_id: req.userId,
+          user_id: { [Op.not]: req.userId },
           date: {
             [Op.between]: [startOfDay(date), endOfDay(date)],
           },

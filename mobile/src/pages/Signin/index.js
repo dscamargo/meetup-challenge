@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Image, ActivityIndicator } from 'react-native';
+import { Image, ActivityIndicator, Alert } from 'react-native';
+import * as Yup from 'yup';
 
 import { signinRequest } from '~/store/modules/auth/actions';
 import Background from '~/components/background';
@@ -15,6 +16,15 @@ import {
 } from './styles';
 import logo from '~/assets/images/logo.png';
 
+const schema = Yup.object().shape({
+  password: Yup.string()
+    .min(6, 'A senha deve ter pelo menos 6 caracteres')
+    .required('A senha é obrigatória'),
+  email: Yup.string()
+    .email('Insira um email válido')
+    .required('O email é obrigatório'),
+});
+
 export default function Signin({ navigation }) {
   const loading = useSelector(state => state.auth.loading);
   const dispatch = useDispatch();
@@ -24,9 +34,10 @@ export default function Signin({ navigation }) {
   const [password, setPassword] = useState('');
 
   function handleSubmit() {
-    dispatch(signinRequest(email, password));
-
-    console.tron.log('Logou');
+    schema
+      .validate({ email, password })
+      .then(() => dispatch(signinRequest(email, password)))
+      .catch(err => Alert.alert('Verifique seus dados', `${err.message}`));
   }
   return (
     <Background>

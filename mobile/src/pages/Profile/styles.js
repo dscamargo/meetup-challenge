@@ -30,4 +30,32 @@ export const FormInput = styled.TextInput.attrs({
   background: rgba(0, 0, 0, 0.2);
   margin-top: 20px;
   padding: 0 20px;
+  color: #fff;
+  font-size: 16px;
+`;
+
+export const SubmitButton = styled.TouchableOpacity`
+  width: 100%;
+  background: #e5556e;
+  height: 50px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  border-radius: 4px;
+`;
+
+export const LogoutButton = styled.TouchableOpacity`
+  width: 100%;
+  height: 40px;
+  background: #d44059;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+  border-radius: 4px;
+`;
+
+export const ButtonText = styled.Text`
+  color: #fff;
+  font-weight: bold;
+  font-size: 14px;
 `;

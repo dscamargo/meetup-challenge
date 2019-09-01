@@ -1,6 +1,6 @@
 import dateFns, { startOfDay, endOfDay } from 'date-fns';
 import { Op } from 'sequelize';
-import { Meetup, User, File } from '../models';
+import { Meetup, User, File, Register } from '../models';
 
 class MeetupController {
   async store(req, res) {
@@ -8,8 +8,8 @@ class MeetupController {
 
     if (dateFns.isAfter(new Date(), date))
       return res.status(401).json({
-        status: 'error',
-        message: 'It is not possible to make an appointment earlier than today',
+        message:
+          'Não é possível registrar um Meetup em uma data anterior a data de hoje',
       });
 
     const meetup = await Meetup.create({ ...req.body, user_id: req.userId });
@@ -36,8 +36,7 @@ class MeetupController {
 
     if (!meetup) {
       return res.status(404).json({
-        status: 'error',
-        message: 'Meetup do not found',
+        message: 'Meetup não encontrado',
       });
     }
 
@@ -46,15 +45,27 @@ class MeetupController {
   async index(req, res) {
     const { date, page = 1 } = req.query;
     let meetups;
+    let blacklist = [];
+
+    const registers = await Register.findAll({
+      where: { user_id: req.userId },
+      attributes: ['meetup_id'],
+    });
+
+    registers.map(register => blacklist.push(register.meetup_id));
 
     if (date) {
-      meetups = await Meetup.findAll({
+      meetups = await Meetup.findAndCountAll({
         where: {
+          id: {
+            [Op.notIn]: blacklist,
+          },
           user_id: { [Op.not]: req.userId },
           date: {
             [Op.between]: [startOfDay(date), endOfDay(date)],
           },
         },
+        order: [['date', 'ASC']],
         limit: 10,
         offset: 10 * page - 10,
         include: [
@@ -71,10 +82,13 @@ class MeetupController {
         ],
       });
     } else {
-      meetups = await Meetup.findAll({
-        where: { user_id: req.userId },
-        limit: 10,
-        offset: 10 * page - 10,
+      meetups = await Meetup.findAndCountAll({
+        where: {
+          user_id: req.userId,
+        },
+
+        order: [['date', 'ASC']],
+
         include: [
           {
             model: User,
@@ -99,15 +113,13 @@ class MeetupController {
 
     if (meetup.user_id !== req.userId) {
       return res.status(401).json({
-        status: 'error',
-        message: 'You are not the owner of this meetup',
+        message: 'Não é possível editar um Meetup que você não é o organizador',
       });
     }
 
     if (dateFns.isAfter(new Date(), meetup.date)) {
       return res.status(401).json({
-        status: 'error',
-        message: 'You cannot edit meetings that have already been held',
+        message: 'Não é possível editar um Meetup que já foi realizado',
       });
     }
 
@@ -121,15 +133,14 @@ class MeetupController {
 
     if (dateFns.isAfter(new Date(), meetup.date)) {
       return res.status(401).json({
-        status: 'error',
-        message: 'You cannot remove meetings that have already been held.',
+        message: 'Não é possível excluir um Meetup que já foi realizado',
       });
     }
 
     if (meetup.user_id !== req.userId) {
       return res.status(401).json({
-        status: 'error',
-        message: 'You are not the owner of this meetup',
+        message:
+          'Não é possível excluir um Meetup que você não é o organizador',
       });
     }
 

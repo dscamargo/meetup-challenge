@@ -17,11 +17,11 @@ export function* signIn({ payload }) {
 
     yield put(signinSuccess(token, user));
 
-    api.defaults.headers.Authorization = `Bearer ${token}`;
-
-    // history.push("/");
+    if (token !== null) {
+      api.defaults.headers.Authorization = `Bearer ${token}`;
+    }
   } catch (error) {
-    Alert.alert('Erro ao realizar login', 'Credenciais inválidas.');
+    Alert.alert('Erro ao realizar login', error.response.data.message);
 
     yield put(signFailure());
   }

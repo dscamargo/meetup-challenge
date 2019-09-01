@@ -25,7 +25,7 @@ export function* signIn({ payload }) {
       position: toast.POSITION.TOP_RIGHT
     });
   } catch (error) {
-    toast.error("Credenciais inválidas !", {
+    toast.error(error.response.data.message || "Internal server error", {
       position: toast.POSITION.TOP_RIGHT
     });
     yield put(signFailure());

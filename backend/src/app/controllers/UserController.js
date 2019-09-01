@@ -19,14 +19,12 @@ class UserController {
     if (!(await schema.isValid(req.body)))
       return res
         .status(400)
-        .json({ status: 'error', message: 'Validation fails' });
+        .json({ message: 'Erro da validação na entrada de dados' });
 
     const userExists = await User.findOne({ where: { email } });
 
     if (userExists)
-      return res
-        .status(401)
-        .json({ status: 'error', message: 'User already exists' });
+      return res.status(401).json({ message: 'Usuário já existe' });
 
     const user = await User.create({ username, email, password });
 
@@ -35,8 +33,10 @@ class UserController {
 
   async update(req, res) {
     const schema = Yup.object().shape({
-      username: Yup.string(),
-      email: Yup.string().email(),
+      username: Yup.string().required(),
+      email: Yup.string()
+        .email()
+        .required(),
       password_old: Yup.string().min(6),
       password: Yup.string().when('password_old', (oldPassword, field) =>
         oldPassword ? field.min(6).required() : field
@@ -45,32 +45,30 @@ class UserController {
         password ? field.required().oneOf([Yup.ref('password')]) : field
       ),
     });
-    const { id } = req.params;
-    const { password_old, password } = req.body;
 
-    if (!(await schema.isValid(req.body))) {
+    const { username, email, password_old, password } = req.body;
+
+    if (!(await schema.isValid(req.body)))
       return res
         .status(400)
-        .json({ status: 'error', message: 'Validation fails' });
-    }
+        .json({ message: 'Erro da validação na entrada de dados' });
 
-    const user = await User.findByPk(id);
-
-    if (!user)
-      res.status(404).json({ status: 'error', message: 'User not found' });
+    const user = await User.findByPk(req.userId);
 
     if (password_old) {
       const isCorrect = await bcrypt.compare(password_old, user.password_hash);
 
-      if (!isCorrect)
-        return res
-          .status(401)
-          .json({ status: 'error', message: 'Incorrect old password' });
+      if (!isCorrect) {
+        return res.status(401).json({ message: 'Senha antiga incorreta' });
+      }
 
       user.password = password;
-
-      user.save();
     }
+
+    user.username = username;
+    user.email = email;
+
+    await user.save();
 
     return res.status(200).json(user);
   }

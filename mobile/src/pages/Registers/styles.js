@@ -56,3 +56,17 @@ export const ButtonText = styled.Text`
   font-weight: bold;
   font-size: 16px;
 `;
+
+export const ListEmpty = styled.View`
+  width: 100%;
+
+  justify-content: center;
+  align-items: center;
+  margin-top: 50px;
+`;
+
+export const Empty = styled.Text`
+  color: #fff;
+  font-size: 20px;
+  font-weight: bold;
+`;

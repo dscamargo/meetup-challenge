@@ -18,7 +18,7 @@ class SessionController {
     if (!(await schema.isValid(req.body))) {
       return res
         .status(400)
-        .json({ status: 'error', message: 'Validation fails' });
+        .json({ message: 'Erro de validação na entrada de dados' });
     }
 
     const user = await User.findOne({
@@ -26,15 +26,12 @@ class SessionController {
     });
 
     if (!user) {
-      return res
-        .status(404)
-        .json({ status: 'error', message: 'User not found' });
+      return res.status(404).json({ message: 'Usuário não encontrado' });
     }
 
     if (!(await user.checkPassword(password))) {
       return res.status(401).json({
-        status: 'error',
-        message: 'Incorrect password',
+        message: 'Senha incorreta',
       });
     }
 

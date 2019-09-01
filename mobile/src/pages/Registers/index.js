@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { TouchableOpacity, FlatList } from 'react-native';
+import { FlatList, Alert } from 'react-native';
+import { format, parseISO } from 'date-fns';
+import pt from 'date-fns/locale/pt';
 
 import Background from '~/components/background';
 import Header from '~/components/header';
 import MeetupBanner from '~/assets/images/banner.png';
+import api from '~/services/api';
 
 import {
   Container,
@@ -16,61 +19,82 @@ import {
   InfoText,
   RegisterButton,
   ButtonText,
+  ListEmpty,
+  Empty,
 } from './styles';
 
-const RenderMeetup = ({ item }) => {
-  return (
-    <Meetup>
-      <Banner source={MeetupBanner} />
-      <ListContainer>
-        <Title>{item.title}</Title>
-        <InfoView>
-          <Icon name="event" size={20} color="#999"></Icon>
-          <InfoText>{item.date}</InfoText>
-        </InfoView>
-        <InfoView>
-          <Icon name="place" size={20} color="#999"></Icon>
-          <InfoText>{item.place}</InfoText>
-        </InfoView>
-        <InfoView>
-          <Icon name="person" size={20} color="#999"></Icon>
-          <InfoText>Organizador: {item.user}</InfoText>
-        </InfoView>
-
-        <RegisterButton>
-          <ButtonText>Cancelar inscrição</ButtonText>
-        </RegisterButton>
-      </ListContainer>
-    </Meetup>
-  );
-};
-
 export default function Registers() {
-  const data = [
-    {
-      id: 1,
-      title: 'Meetup de React Native 1',
-      date: '24 de junho, às 20h',
-      place: 'Rua Guilherme Gembala, 260',
-      user: 'Diego Fernandes',
-    },
-    {
-      id: 2,
-      title: 'Meetup de React Native 2',
-      date: '24 de junho, às 20h',
-      place: 'Rua Guilherme Gembala, 260',
-      user: 'Diego Fernandes',
-    },
-  ];
+  const [registeredMeetups, setRegisteredMeetups] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [canceled, setCanceled] = useState(false);
+  async function loadRegisteredMeetups() {
+    const response = await api.get('/registers');
+
+    setRegisteredMeetups(response.data);
+    setCanceled(false);
+  }
+  useEffect(() => {
+    loadRegisteredMeetups();
+  }, [canceled]);
+
+  async function handleCancel(id) {
+    try {
+      await api.delete(`/registers/${id}`);
+
+      Alert.alert('Cancelamento', 'Inscrição cancelada com sucesso.');
+      setCanceled(true);
+    } catch (error) {
+      Alert.alert('Cancelamento', error.response.data.message);
+    }
+  }
   return (
     <Background>
       <Header />
       <Container>
         <FlatList
           style={{ width: '90%' }}
-          data={data}
-          renderItem={data => RenderMeetup(data)}
-          keyExtractor={(item, index) => item.title}
+          ListEmptyComponent={() => (
+            <ListEmpty>
+              <Empty>Sem inscrições, no momento.</Empty>
+            </ListEmpty>
+          )}
+          data={registeredMeetups}
+          keyExtractor={(item, index) => item.id.toString()}
+          onRefresh={() => loadRegisteredMeetups()}
+          refreshing={refreshing}
+          renderItem={({ item }) => {
+            const { meetup } = item;
+            return (
+              <Meetup>
+                <Banner source={MeetupBanner} />
+                <ListContainer>
+                  <Title>{meetup.title}</Title>
+                  <InfoView>
+                    <Icon name="event" size={20} color="#999"></Icon>
+                    <InfoText>
+                      {format(
+                        parseISO(meetup.date),
+                        "dd 'de' LLLL 'de' yyyy 'às' HH':'mm'h'",
+                        { locale: pt }
+                      )}
+                    </InfoText>
+                  </InfoView>
+                  <InfoView>
+                    <Icon name="place" size={20} color="#999"></Icon>
+                    <InfoText>{meetup.place}</InfoText>
+                  </InfoView>
+                  <InfoView>
+                    <Icon name="person" size={20} color="#999"></Icon>
+                    <InfoText>Organizador: {meetup.user.username}</InfoText>
+                  </InfoView>
+
+                  <RegisterButton onPress={() => handleCancel(item.id)}>
+                    <ButtonText>Cancelar inscrição</ButtonText>
+                  </RegisterButton>
+                </ListContainer>
+              </Meetup>
+            );
+          }}
         ></FlatList>
       </Container>
     </Background>

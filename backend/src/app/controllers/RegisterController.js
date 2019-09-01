@@ -22,22 +22,18 @@ class RegisterController {
     });
 
     if (!meetup) {
-      return res
-        .status(404)
-        .json({ status: 'error', message: 'Meetup not found' });
+      return res.status(404).json({ message: 'Meetup não encontrado' });
     }
 
     if (meetup.user_id === req.userId) {
       return res.status(401).json({
-        status: 'error',
-        message: 'You can not register in the meetup that you are the owner',
+        message: 'Não é possivel se increver em Meetups que você é organizador',
       });
     }
 
     if (moment(new Date()).isAfter(meetup.date)) {
       return res.status(401).json({
-        status: 'error',
-        message: 'This meetup has passed',
+        message: 'O Meetup já foi realizado',
       });
     }
 
@@ -47,8 +43,7 @@ class RegisterController {
 
     if (isRegistered) {
       return res.status(401).json({
-        status: 'error',
-        message: 'You already registered in this meetup',
+        message: 'Você já está inscrito neste Meetup',
       });
     }
 
@@ -68,8 +63,8 @@ class RegisterController {
 
     if (sameDate) {
       return res.status(401).json({
-        status: 'error',
-        message: 'You can not register in various meetup in the same date',
+        message:
+          'Não é possivel se inscrever em mais de um Meetup no mesmo horário',
       });
     }
 
@@ -134,7 +129,34 @@ class RegisterController {
       order: [[{ model: Meetup, as: 'meetup' }, 'date', 'ASC']],
     });
 
-    return res.status(200).json({ registers });
+    return res.status(200).json(registers);
+  }
+  async destroy(req, res) {
+    const { id } = req.params;
+    const register = await Register.findByPk(id, {
+      include: [
+        {
+          model: Meetup,
+          as: 'meetup',
+        },
+      ],
+    });
+
+    if (register.user_id !== req.userId) {
+      return res.status(401).json({
+        message: 'Não é possível remover uma inscrição que não é sua',
+      });
+    }
+
+    if (moment(new Date()).isAfter(register.meetup.date)) {
+      return res.status(401).json({
+        message: 'O Meetup já foi realizado',
+      });
+    }
+
+    await register.destroy({ force: true });
+
+    return res.json({});
   }
 }
 

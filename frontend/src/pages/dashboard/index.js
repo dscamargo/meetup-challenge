@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { MdAddCircleOutline, MdChevronRight } from "react-icons/md";
 import { format, parseISO } from "date-fns";
 import pt from "date-fns/locale/pt";
+import { toast } from "react-toastify";
 
 import {
   Container,
@@ -19,22 +20,29 @@ import Loading from "../../components/loading";
 export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [meetups, setMeetups] = useState([]);
+  const [total, setTotal] = useState(0);
+
   const profile = useSelector(state => state.user.profile);
-  useEffect(() => {
-    async function getMeetups() {
-      setLoading(true);
-      try {
-        const response = await api.get("/meetups");
 
-        setMeetups(response.data);
-      } catch (error) {
-        console.warn("Internal server error");
-      }
-      setLoading(false);
+  async function getMeetups() {
+    setLoading(true);
+    try {
+      const response = await api.get("/meetups");
+
+      setMeetups(response.data.rows);
+      setTotal(Math.floor(response.data.count / 10));
+    } catch (error) {
+      toast.error(error.response.data.message || "Internal server error", {
+        position: toast.POSITION.TOP_RIGHT
+      });
     }
+    setLoading(false);
+  }
 
+  useEffect(() => {
     getMeetups();
   }, []);
+
   return (
     <Container>
       <Header username={profile.username} />

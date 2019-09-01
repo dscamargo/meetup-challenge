@@ -1,17 +1,13 @@
-export function updateProfileRequest(
-  id,
-  password,
-  password_old,
-  password_confirmation
-) {
+export function updateProfileRequest(data) {
   return {
     type: "@USER/UPDATE_REQUEST",
-    payload: { id, password, password_old, password_confirmation }
+    payload: { data }
   };
 }
 
-export function updateProfileSuccess() {
+export function updateProfileSuccess(user) {
   return {
-    type: "@USER/UPDATE_SUCCESS"
+    type: "@USER/UPDATE_SUCCESS",
+    payload: { user }
   };
 }

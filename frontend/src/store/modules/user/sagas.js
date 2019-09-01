@@ -7,22 +7,23 @@ import { updateProfileSuccess } from "./actions";
 import { toast } from "react-toastify";
 
 export function* updateProfile({ payload }) {
-  const { id, password_old, password, password_confirmation } = payload;
+  const { username, email, ...rest } = payload.data;
+
+  const profile = Object.assign(
+    { username, email },
+    rest.password_old ? rest : {}
+  );
 
   try {
-    yield call(api.put, `/users/${id}`, {
-      password_old,
-      password,
-      password_confirmation
-    });
+    const response = yield call(api.put, `/users`, profile);
 
-    yield put(updateProfileSuccess());
-    toast.info("Suas informações foram alteradas com sucesso !", {
+    yield put(updateProfileSuccess(response.data));
+    toast.info("Perfil editado com sucesso !", {
       position: toast.POSITION.TOP_RIGHT
     });
     history.push("/");
   } catch (error) {
-    toast.error("Senha incorreta !", {
+    toast.error(error.response.data.message || "Internal server error", {
       position: toast.POSITION.TOP_RIGHT
     });
   }

@@ -6,19 +6,19 @@ import api from '../../../services/api';
 import { updateProfileSuccess } from './actions';
 
 export function* updateProfile({ payload }) {
-  const { id, password_old, password, password_confirmation } = payload;
+  const { username, email, ...rest } = payload;
+
+  const profile = Object.assign(
+    { username, email },
+    rest.password_old ? rest : {}
+  );
 
   try {
-    yield call(api.put, `/users/${id}`, {
-      password_old,
-      password,
-      password_confirmation,
-    });
+    const response = yield call(api.put, `/users`, profile);
 
-    yield put(updateProfileSuccess());
+    yield put(updateProfileSuccess(response.data));
 
     Alert.alert('Sucesso', 'Perfil atualizado com sucesso');
-    // history.push("/");
   } catch (error) {
     Alert.alert(
       'Erro',

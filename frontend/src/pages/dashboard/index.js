@@ -20,7 +20,6 @@ import Loading from "../../components/loading";
 export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [meetups, setMeetups] = useState([]);
-  const [total, setTotal] = useState(0);
 
   const profile = useSelector(state => state.user.profile);
 
@@ -30,7 +29,6 @@ export default function Dashboard() {
       const response = await api.get("/meetups");
 
       setMeetups(response.data.rows);
-      setTotal(Math.floor(response.data.count / 10));
     } catch (error) {
       toast.error(error.response.data.message || "Internal server error", {
         position: toast.POSITION.TOP_RIGHT
